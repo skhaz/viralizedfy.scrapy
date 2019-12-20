@@ -1,0 +1,6 @@
+base36==0.1.1
+boto3==1.10.43
+scrapy-deltafetch==1.2.1
+scrapy-magicfields==1.1.0
+scrapy==1.8.0
+shub==2.10.0
