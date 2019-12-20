@@ -8,7 +8,7 @@ MEDIA_ALLOW_REDIRECTS = True
 
 CONCURRENT_REQUESTS = 64
 
-FILES_STORE = 's3://viralizedfy/media'
+FILES_STORE = 's3://viralizedfy'
 
 AWS_ACCESS_KEY_ID = 'AKIAS3BUSIV6LMWXD6VG'
 
@@ -41,10 +41,10 @@ MAGIC_FIELDS = {
 }
 
 EXTENSIONS = {
-  'scrapy_dotpersistence.DotScrapyPersistence': 0
+  'scrapy_dotpersistence.DotScrapyPersistence': 100
 }
 
-DOTSCRAPY_ENABLED = True
+DOTSCRAPY_ENABLED = False
 
 ADDONS_AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
 ADDONS_AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
