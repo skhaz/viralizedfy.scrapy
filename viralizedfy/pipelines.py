@@ -4,7 +4,7 @@ import re
 import hashlib
 import mimetypes
 import functools
-import datetime
+from datetime import datetime
 from pathlib import Path
 from unicodedata import normalize
 from urllib.parse import urlparse
@@ -90,15 +90,13 @@ jinja2_env = Environment(loader=BaseLoader(), trim_blocks=True)
 
 base = Template('''---
 title: "{{ title }}"
-date: "{{ now() }}"
+date: "{{ now }}"
 draft: false
 ---
 
 {{ content }}
 
 ''')
-
-base.globals['now'] = datetime.datetime.utcnow
 
 tags = '''
 ![{{ title }}]({{ guid + extension }})
@@ -137,6 +135,6 @@ class MarkdownifyPipeline():
   def process_item(self, item, spider):
     kind, _ = item['mimetype'].split('/')
     template = templates[kind]
-    result = jinja2_env.from_string(template).render(base=base, **item)
-
+    now = datetime.today().strftime('%Y-%m-%d')
+    result = jinja2_env.from_string(template).render(base=base, now, **item)
     self.s3.put_object(Body=result, Bucket=self.bucket, Key=f'{item["guid"]}.md')
