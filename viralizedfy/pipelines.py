@@ -136,5 +136,5 @@ class MarkdownifyPipeline():
     kind, _ = item['mimetype'].split('/')
     template = templates[kind]
     now = datetime.today().strftime('%Y-%m-%d')
-    result = jinja2_env.from_string(template).render(base=base, now, **item)
+    result = jinja2_env.from_string(template).render(base=base, now=now, **item)
     self.s3.put_object(Body=result, Bucket=self.bucket, Key=f'{item["guid"]}.md')
