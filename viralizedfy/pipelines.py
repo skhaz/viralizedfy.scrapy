@@ -4,8 +4,12 @@ import re
 import hashlib
 import mimetypes
 import functools
+import datetime
 from pathlib import Path
 from unicodedata import normalize
+from urllib.parse import urlparse
+
+from jinja2 import Environment, BaseLoader, Template
 
 from scrapy.http import Request
 from scrapy.utils.python import to_bytes
@@ -13,6 +17,7 @@ from scrapy.exceptions import DropItem
 from scrapy.exporters import BaseItemExporter
 from scrapy.pipelines.files import FilesPipeline
 
+import boto3
 import base36
 
 
@@ -79,3 +84,59 @@ class DownloadPipeline(FilesPipeline):
   def item_completed(self, results, item, info):
     item['ready'] = bool(results[0][0])
     return item
+
+
+jinja2_env = Environment(loader=BaseLoader(), trim_blocks=True)
+
+base = Template('''---
+title: "{{ title }}"
+date: "{{ now() }}"
+draft: false
+---
+
+{{ content }}
+
+''')
+
+base.globals['now'] = datetime.datetime.utcnow
+
+tags = '''
+![{{ title }}]({{ guid + extension }})
+---
+`audio: title: {{ guid + extension }}`
+---
+`video: title: {{ title|tojson }}: {{ guid + extension }}`
+'''.split(
+  '---'
+)
+
+templates = {
+  key: f'{{% include base %}}\n{value}'
+    for key, value in dict(
+      image=tags[0],
+      audio=tags[1],
+      video=tags[2],
+    ).items()
+}
+
+class MarkdownifyPipeline():
+
+  def __init__(self, settings, stats):
+    self.stats = stats
+
+    url = settings['FILES_STORE']
+
+    self.bucket = urlparse(url).hostname
+
+    self.s3 = boto3.client('s3')
+
+  @classmethod
+  def from_crawler(cls, crawler):
+    return cls(crawler.settings, crawler.stats)
+
+  def process_item(self, item, spider):
+    kind, _ = item['mimetype'].split('/')
+    template = templates[kind]
+    result = jinja2_env.from_string(template).render(base=base, **item)
+
+    self.s3.put_object(Body=result, Bucket=self.bucket, Key=f'{item["guid"]}.md')
