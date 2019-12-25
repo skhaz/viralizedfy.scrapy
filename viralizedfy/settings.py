@@ -8,8 +8,6 @@ NEWSPIDER_MODULE = 'viralizedfy.spiders'
 
 MEDIA_ALLOW_REDIRECTS = True
 
-CONCURRENT_REQUESTS = 64
-
 FILES_STORE = 's3://viralizedfy/'
 
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
@@ -28,7 +26,7 @@ SPIDER_MIDDLEWARES = {
     'scrapy_magicfields.MagicFieldsMiddleware': 200,
 }
 
-DELTAFETCH_ENABLED = False
+DELTAFETCH_ENABLED = True
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 100,
@@ -46,7 +44,7 @@ EXTENSIONS = {
   'scrapy_dotpersistence.DotScrapyPersistence': 100
 }
 
-DOTSCRAPY_ENABLED = False
+DOTSCRAPY_ENABLED = True
 
 ADDONS_AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
 ADDONS_AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY

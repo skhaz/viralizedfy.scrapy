@@ -12,6 +12,7 @@ class Entry(Item):
   poster = Field()
   ready = Field()
   spider = Field()
+  tags = Field()
   timestamp = Field()
   title = Field()
   url = Field()

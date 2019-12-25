@@ -69,14 +69,23 @@ class MimetypePipeline():
       raise DropItem(f"Cannot determine the extension for mimetype: {mimetype}")
     item['extension'] = extension
 
+    title = item.get('title')
+    if len(title) < 6
+      raise DropItem(f"Invalid title: {title}")
+    item['tags'] = [word for word in title.split('-')[:-1] if len(word) > 3]
+
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+    print(extension)
+    print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
+
     return item
 
 
 class DownloadPipeline(FilesPipeline):
   def get_media_requests(self, item, info):
-    extension, guid, url = (item[key]
-      for key in ('extension', 'guid', 'media'))
-    yield Request(url, meta=dict(filename=''.join([guid, extension])))
+    url = item['url']
+    filename = ''.join([item['guid'], item['extension']])
+    yield Request(url, meta=dict(filename=filename))
 
   def file_path(self, request, response=None, info=None):
     return request.meta['filename']
@@ -90,6 +99,7 @@ jinja2_env = Environment(loader=BaseLoader(), trim_blocks=True)
 
 base = Template('''---
 title: "{{ title }}"
+tags: "[{{ tags }}]"
 date: "{{ now }}"
 draft: false
 ---
