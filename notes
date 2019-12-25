@@ -1,0 +1,52 @@
+
+
+
+
+
+
+
+
+
+docker run -it -v"$PWD":/data -w /data scrapy crawl wt -s FILES_STORE=media -o wt.json -t json
+
+
+
+mkdir -p {media,thumbs}
+
+
+
+1 - docker run -ti --name gcloud-config gcr.io/google.com/cloudsdktool/cloud-sdk gcloud auth login
+2 - docker run -ti --volumes-from gcloud-config -v "$PWD":/data -w /data gcr.io/google.com/cloudsdktool/cloud-sdk:latest gsutil -m rsync -r gs://viralizedfy .
+
+
+docker run -it -v "$PWD":/data -w /data scrapy crawl wt -s FILES_STORE=files/media -o wt.json -t json
+
+
+ffmpeg -i <input> -vf "select=gte(n,1)" -vframes 1 out.png
+
+docker run -it -v "$PWD":/data -w /data skhaz/compression-tools parallel mogrify \
+  -resize 160x160 \
+  -format jpg \
+  -quality 80 \
+  -path thumbs \
+  ::: *.jpg *.png
+
+docker run -it -v "$PWD":/data -w /data skhaz/compression-tools parallel ect -9 -strip -progressive --allfilters "{}" ::: *.jpg *.png
+
+
+find . -name '*.in' -type f | parallel -j N rm --
+
+
+mogrify -resize 80x80 \
+        -background white \
+        -gravity center \
+        -extent 80x80 \
+        -format jpg \
+        -quality 75 \
+        -path thumbnails \
+        *.gif[0]
+
+
+docker run gcr.io/google.com/cloudsdktool/cloud-sdk:latest gsutil -m rsync -r data gs://mybucket/data
+
+
