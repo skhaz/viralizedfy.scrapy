@@ -79,7 +79,7 @@ class MimetypePipeline():
 class DownloadPipeline(FilesPipeline):
   def get_media_requests(self, item, info):
     url = item['media']
-    filename = ''.join([item['guid'], item['extension']])
+    filename = f'{item["guid"]}{item["extension"]}'
     yield Request(url, meta=dict(filename=filename))
 
   def file_path(self, request, response=None, info=None):
