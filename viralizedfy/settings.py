@@ -1,38 +1,25 @@
 import os
 
 BOT_NAME = 'viralizedfy'
-
 SPIDER_MODULES = ['viralizedfy.spiders']
-
 NEWSPIDER_MODULE = 'viralizedfy.spiders'
 
 MEDIA_ALLOW_REDIRECTS = True
 
-FILES_STORE = 's3://viralizedfy/'
+FILES_STORE = os.environ.get('FILES_STORE', 'media')
 
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+DOWNLOADER_MIDDLEWARES = {
+  'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 100,
+  'scrapy.downloadermiddlewares.retry.RetryMiddleware': 200,
+  'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 300,
+  'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 400
+}
 
 ITEM_PIPELINES = {
   'viralizedfy.pipelines.PreparePipeline': 100,
-  'viralizedfy.pipelines.MimetypePipeline': 200,
-  'viralizedfy.pipelines.DownloadPipeline': 300,
-  'viralizedfy.pipelines.MarkdownifyPipeline': 400
-}
-
-SPIDER_MIDDLEWARES = {
-    'scrapy_deltafetch.DeltaFetch': 100,
-    'scrapy_magicfields.MagicFieldsMiddleware': 200,
-}
-
-DELTAFETCH_ENABLED = True
-
-DOWNLOADER_MIDDLEWARES = {
-    'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 100,
-    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 200,
-    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 300,
-    'scrapy.downloadermiddlewares.redirect.RedirectMiddleware': 400
+  'viralizedfy.pipelines.TagsPipeline': 200,
+  'viralizedfy.pipelines.MimetypePipeline': 300,
+  'viralizedfy.pipelines.DownloadPipeline': 400,
 }
 
 MAGIC_FIELDS = {
@@ -40,12 +27,15 @@ MAGIC_FIELDS = {
   'spider': '$spider:name',
 }
 
+SPIDER_MIDDLEWARES = {
+  'scrapy_deltafetch.DeltaFetch': 100,
+  'scrapy_magicfields.MagicFieldsMiddleware': 200,
+}
+
+DELTAFETCH_ENABLED = False
+
 EXTENSIONS = {
   'scrapy_dotpersistence.DotScrapyPersistence': 100
 }
 
-DOTSCRAPY_ENABLED = True
-
-ADDONS_AWS_ACCESS_KEY_ID = AWS_ACCESS_KEY_ID
-ADDONS_AWS_SECRET_ACCESS_KEY = AWS_SECRET_ACCESS_KEY
-ADDONS_S3_BUCKET = 'viralizedfy'
+DOTSCRAPY_ENABLED = False

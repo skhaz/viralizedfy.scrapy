@@ -49,7 +49,6 @@ class Spider(CrawlSpider):
     loader.add_xpath('title', '//*[@class="cs-post-single-header"]/h1/text()')
     loader.add_xpath('content', '//header/h3/text()')
     loader.add_xpath('media', '//*[@id="player"]/source/@src')
-    loader.add_xpath('poster', '//*[@id="player"]/@poster')
     return loader.load_item()
 
   def parse_other(self, response):

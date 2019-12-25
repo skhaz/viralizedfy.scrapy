@@ -9,7 +9,6 @@ class Entry(Item):
   guid = Field()
   media = Field()
   mimetype = Field()
-  poster = Field()
   ready = Field()
   spider = Field()
   tags = Field()
@@ -22,5 +21,4 @@ class EntryLoader(ItemLoader):
   content_out = Join()
   media_in = TakeFirst()
   media_out = Join()
-  poster_out = Join()
   title_out = Join()

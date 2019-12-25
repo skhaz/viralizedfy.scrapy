@@ -28,5 +28,4 @@ class Spider(CrawlSpider):
     loader.add_css('media', '#player source::attr(src)')
     loader.add_css('media', '.attachment-full ::attr(src)')
     loader.add_css('media', '.main-body script', re=r"link.href='(.*)';")
-    loader.add_css('poster', '#player ::attr(poster)')
     return loader.load_item()

@@ -9,15 +9,12 @@ from pathlib import Path
 from unicodedata import normalize
 from urllib.parse import urlparse
 
-from jinja2 import Environment, BaseLoader, Template
-
 from scrapy.http import Request
 from scrapy.utils.python import to_bytes
 from scrapy.exceptions import DropItem
 from scrapy.exporters import BaseItemExporter
 from scrapy.pipelines.files import FilesPipeline
 
-import boto3
 import base36
 
 
@@ -53,6 +50,13 @@ class PreparePipeline():
     return item
 
 
+class TagsPipeline():
+  def process_item(self, item, spider):
+    splitted = item['guid'].split('-')[:-1]
+    item['tags'] = [word for word in splitted if len(word) > 3]
+    return item
+
+
 class MimetypePipeline():
   def process_item(self, item, spider):
     media = item.get('media')
@@ -69,21 +73,12 @@ class MimetypePipeline():
       raise DropItem(f"Cannot determine the extension for mimetype: {mimetype}")
     item['extension'] = extension
 
-    title = item.get('title')
-    if len(title) < 6
-      raise DropItem(f"Invalid title: {title}")
-    item['tags'] = [word for word in title.split('-')[:-1] if len(word) > 3]
-
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    print(extension)
-    print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-
     return item
 
 
 class DownloadPipeline(FilesPipeline):
   def get_media_requests(self, item, info):
-    url = item['url']
+    url = item['media']
     filename = ''.join([item['guid'], item['extension']])
     yield Request(url, meta=dict(filename=filename))
 
@@ -93,58 +88,3 @@ class DownloadPipeline(FilesPipeline):
   def item_completed(self, results, item, info):
     item['ready'] = bool(results[0][0])
     return item
-
-
-jinja2_env = Environment(loader=BaseLoader(), trim_blocks=True)
-
-base = Template('''---
-title: "{{ title }}"
-tags: "[{{ tags }}]"
-date: "{{ now }}"
-draft: false
----
-
-{{ content }}
-
-''')
-
-tags = '''
-![{{ title }}]({{ guid + extension }})
----
-`audio: title: {{ guid + extension }}`
----
-`video: title: {{ title|tojson }}: {{ guid + extension }}`
-'''.split(
-  '---'
-)
-
-templates = {
-  key: f'{{% include base %}}\n{value}'
-    for key, value in dict(
-      image=tags[0],
-      audio=tags[1],
-      video=tags[2],
-    ).items()
-}
-
-class MarkdownifyPipeline():
-
-  def __init__(self, settings, stats):
-    self.stats = stats
-
-    url = settings['FILES_STORE']
-
-    self.bucket = urlparse(url).hostname
-
-    self.s3 = boto3.client('s3')
-
-  @classmethod
-  def from_crawler(cls, crawler):
-    return cls(crawler.settings, crawler.stats)
-
-  def process_item(self, item, spider):
-    kind, _ = item['mimetype'].split('/')
-    template = templates[kind]
-    now = datetime.today().strftime('%Y-%m-%d')
-    result = jinja2_env.from_string(template).render(base=base, now=now, **item)
-    self.s3.put_object(Body=result, Bucket=self.bucket, Key=f'{item["guid"]}.md')

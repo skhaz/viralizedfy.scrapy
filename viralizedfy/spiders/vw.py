@@ -22,5 +22,4 @@ class Spider(CrawlSpider):
     loader.add_xpath('content', '//*[@class="text"]/*[not(self::span)]/text()')
     loader.add_xpath('media', '//*[@id="object"]/img/@src')
     loader.add_xpath('media', '//*[@id="object"]/video/source/@src')
-    loader.add_xpath('poster', '//*[@id="object"]/video/@poster')
     return loader.load_item()
